@@ -25,6 +25,26 @@ func TestPathMuxStaticPath(t *testing.T) {
 	}
 }
 
+func TestPathMuxGetParams(t *testing.T) {
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		params := trailmux.PathParameters(r)
+		if params.Get("msg") != "helloworld" {
+			t.Error("should give valid params")
+		}
+		if params.Get("othermsg") != "" {
+			t.Error("should give empty param for non existant param")
+		}
+	})
+	mux := trailmux.PathMux{}
+	mux.Handle("/foo/:msg", h)
+	req, _ := http.NewRequest("GET", "/foo/helloworld", nil)
+	response := httptest.NewRecorder()
+	mux.ServeHTTP(response, req)
+	if response.Code != http.StatusOK {
+		t.Error("should respond with status ok")
+	}
+}
+
 func TestPathMuxPathNotFound(t *testing.T) {
 	target := false
 	h := GenerateHandlerHit(&target)

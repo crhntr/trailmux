@@ -40,7 +40,7 @@ func setParamsInContext(r *http.Request, ps Params) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), paramsIDKey, ps))
 }
 
-func PathParameters(r http.Request) (params Params) {
+func PathParameters(r *http.Request) (params Params) {
 	params, _ = r.Context().Value(paramsIDKey).(Params)
 	return params
 }
