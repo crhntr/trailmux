@@ -105,7 +105,7 @@ func (r *PathMux) Lookup(path string) (http.Handler, Params, bool) {
 // }
 
 // ServeHTTP makes the router implement the http.Handler interface.
-func (r *PathMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (r PathMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if r.PanicHandler != nil {
 		defer r.recv(w, req)
 	}
