@@ -1,23 +1,9 @@
 package trailmux
 
-import (
-	"fmt"
-	"net/http"
-)
-
-var methodStrings = [...]string{"GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "CONNECT", "OPTIONS", "TRACE"}
-
-func IsMethod(methodCandidate string) bool {
-	for _, method := range methodStrings {
-		if method == methodCandidate {
-			return true
-		}
-	}
-	return false
-}
+import "net/http"
 
 type MethodMux struct {
-	methodHandlers [len(methodStrings)]http.Handler
+	GET, POST, DELETE, PUT, PATCH, HEAD, CONNECT, OPTIONS, TRACE http.Handler
 
 	// Configurable http.Handler which is called when a request
 	// cannot be routed and HandleMethodNotAllowed is true.
@@ -27,15 +13,38 @@ type MethodMux struct {
 	MethodNotAllowed http.Handler
 }
 
-func (methMux MethodMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	for i, method := range methodStrings {
-		if method == r.Method {
-			handler := methMux.methodHandlers[i]
-			if handler == nil {
-				break
-			}
-			handler.ServeHTTP(w, r)
+func (methMux MethodMux) serveHttp(h http.Handler, w http.ResponseWriter, r *http.Request) {
+	if h == nil {
+		if methMux.MethodNotAllowed != nil {
+			methMux.MethodNotAllowed.ServeHTTP(w, r)
+		} else {
+			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
+		return
+	}
+	h.ServeHTTP(w, r)
+}
+
+func (methMux MethodMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		methMux.serveHttp(methMux.GET, w, r)
+	case "POST":
+		methMux.serveHttp(methMux.POST, w, r)
+	case "DELETE":
+		methMux.serveHttp(methMux.DELETE, w, r)
+	case "PUT":
+		methMux.serveHttp(methMux.PUT, w, r)
+	case "PATCH":
+		methMux.serveHttp(methMux.PATCH, w, r)
+	case "HEAD":
+		methMux.serveHttp(methMux.HEAD, w, r)
+	case "CONNECT":
+		methMux.serveHttp(methMux.CONNECT, w, r)
+	case "OPTIONS":
+		methMux.serveHttp(methMux.OPTIONS, w, r)
+	case "TRACE":
+		methMux.serveHttp(methMux.TRACE, w, r)
 	}
 
 	if methMux.MethodNotAllowed != nil {
@@ -46,47 +55,4 @@ func (methMux MethodMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.StatusText(http.StatusMethodNotAllowed),
 		http.StatusMethodNotAllowed,
 	)
-}
-
-func (methMux *MethodMux) Handle(methodToHandle string, handler http.Handler) {
-	if !IsMethod(methodToHandle) {
-		panic("Not a valid http method")
-	}
-	for i, method := range methodStrings {
-		if methodToHandle == method {
-			if methMux.methodHandlers[i] != nil {
-				panic(fmt.Sprintf("handler for %s already set", method))
-			}
-			methMux.methodHandlers[i] = handler
-			break
-		}
-	}
-}
-
-func (mux *MethodMux) GET(handler http.Handler) {
-	mux.Handle("GET", handler)
-}
-func (mux *MethodMux) POST(handler http.Handler) {
-	mux.Handle("POST", handler)
-}
-func (mux *MethodMux) DELETE(handler http.Handler) {
-	mux.Handle("DELETE", handler)
-}
-func (mux *MethodMux) PUT(handler http.Handler) {
-	mux.Handle("PUT", handler)
-}
-func (mux *MethodMux) PATCH(handler http.Handler) {
-	mux.Handle("PATCH", handler)
-}
-func (mux *MethodMux) HEAD(handler http.Handler) {
-	mux.Handle("HEAD", handler)
-}
-func (mux *MethodMux) CONNECT(handler http.Handler) {
-	mux.Handle("CONNECT", handler)
-}
-func (mux *MethodMux) OPTIONS(handler http.Handler) {
-	mux.Handle("OPTIONS", handler)
-}
-func (mux *MethodMux) TRACE(handler http.Handler) {
-	mux.Handle("TRACE", handler)
 }
