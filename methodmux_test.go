@@ -8,21 +8,6 @@ import (
 	"github.com/crhntr/trailmux"
 )
 
-// HandlerHit is a helper for testing that a handler selected
-type HandlerHit struct {
-	hit *bool
-}
-
-func GenerateHandlerHit(target *bool) HandlerHit {
-	return HandlerHit{
-		hit: target,
-	}
-}
-
-func (handler HandlerHit) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	(*handler.hit) = true
-}
-
 var methodStrings = [...]string{"GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "CONNECT", "OPTIONS", "TRACE"}
 
 func TestMethodMuxValidMethods(t *testing.T) {
