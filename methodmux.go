@@ -45,14 +45,10 @@ func (methMux MethodMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		methMux.serveHttp(methMux.OPTIONS, w, r)
 	case "TRACE":
 		methMux.serveHttp(methMux.TRACE, w, r)
+	default:
+		http.Error(w,
+			http.StatusText(http.StatusBadRequest)+" Method "+r.Method+" Unknown",
+			http.StatusBadRequest,
+		)
 	}
-
-	if methMux.MethodNotAllowed != nil {
-		methMux.MethodNotAllowed.ServeHTTP(w, r)
-	}
-
-	http.Error(w,
-		http.StatusText(http.StatusMethodNotAllowed),
-		http.StatusMethodNotAllowed,
-	)
 }
