@@ -1,10 +1,12 @@
-package trailmux
+package trailmux_test
 
 import (
   "bytes"
   "testing"
   "net/http"
   "net/http/httptest"
+
+  "github.com/crhntr/trailmux"
 )
 
 func TestMuxHappyPaths(t *testing.T) {
@@ -22,12 +24,12 @@ func TestMuxHappyPaths(t *testing.T) {
     someOther = true
   }
 
-  mux := Routes{
-    "/some": Routes{
-      "/path": Routes{
+  mux := trailmux.Routes{
+    "/some": trailmux.Routes{
+      "/path": trailmux.Routes{
         http.MethodPost: http.HandlerFunc(putFn),
       }.Mux(),
-      "/other": Routes{
+      "/other": trailmux.Routes{
         http.MethodGet: http.HandlerFunc(otherGetFn),
       }.Mux(),
     }.Mux(),
@@ -74,15 +76,15 @@ func TestMuxSadPaths(t *testing.T) {
     noMatchCalled = true
   })
 
-  mux := Routes{
-    "/some": Routes{
-      "/other": Routes{}.Mux(),
-      "/path": Routes{
+  mux := trailmux.Routes{
+    "/some": trailmux.Routes{
+      "/other": trailmux.Routes{}.Mux(),
+      "/path": trailmux.Routes{
         http.MethodPost: putFn,
       }.Mux(),
     }.Mux(),
     http.MethodGet: getFn,
-    "/no-match": Routes{}.Mux().NoMatchHandler(noMatch),
+    "/no-match": trailmux.Routes{}.Mux().NoMatchHandler(noMatch),
   }.Mux()
 
   defer func() {
